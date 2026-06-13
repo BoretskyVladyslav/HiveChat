@@ -72,13 +72,40 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="HiveChat 🐝"
-                   Foreground="#e0e0e8"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   FontFamily="Segoe UI"
-                   Margin="0,0,0,12"/>
+        <Border Grid.Row="0"
+                Background="#20202c"
+                CornerRadius="8"
+                Padding="12,10"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="HiveChat 🐝"
+                           Foreground="#e0e0e8"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           FontFamily="Segoe UI"/>
+                
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusIndicator" 
+                             Width="10" Height="10" 
+                             Fill="Red" 
+                             Margin="0,0,6,0"/>
+                    <TextBlock x:Name="StatusText" 
+                               Text="Disconnected" 
+                               Foreground="#a0a0a0" 
+                               FontSize="14" 
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <Border Grid.Row="1"
                 Background="#20202c"

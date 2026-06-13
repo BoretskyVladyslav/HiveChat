@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using HiveChat.Server.Data;
 using HiveChat.Server.Models;
 
@@ -28,5 +29,18 @@ public class ChatHub : Hub
         await _context.SaveChangesAsync();
 
         await Clients.All.SendAsync("ReceiveMessage", username, message, timestamp);
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        var history = await _context.Messages
+            .OrderByDescending(m => m.Timestamp)
+            .Take(30)
+            .ToListAsync();
+
+        history.Reverse();
+
+        await Clients.Caller.SendAsync("ReceiveHistory", history);
+        await base.OnConnectedAsync();
     }
 }

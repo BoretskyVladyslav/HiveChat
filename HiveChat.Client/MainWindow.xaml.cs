@@ -1,9 +1,19 @@
 using System;
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.Generic;
+using System.Windows.Media;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace HiveChat.Client;
+
+public class ServerMessage
+{
+    public int Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
+}
 
 public class ChatMessage
 {
@@ -41,6 +51,26 @@ public partial class MainWindow : Window
             .WithAutomaticReconnect()
             .Build();
 
+        _connection.On<List<ServerMessage>>("ReceiveHistory", (history) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                MessagesList.Items.Clear();
+                foreach (var msg in history)
+                {
+                    bool isOwn = msg.Username == UsernameBox.Text;
+                    MessagesList.Items.Add(new ChatMessage 
+                    { 
+                        Username = msg.Username, 
+                        Text = msg.Text, 
+                        Timestamp = msg.Timestamp, 
+                        IsOwnMessage = isOwn 
+                    });
+                }
+                ScrollToBottom();
+            });
+        });
+
         _connection.On<string, string, DateTime>("ReceiveMessage", (username, message, timestamp) =>
         {
             Dispatcher.Invoke(() =>
@@ -68,6 +98,8 @@ public partial class MainWindow : Window
         {
             Dispatcher.Invoke(() =>
             {
+                StatusText.Text = "Disconnected";
+                StatusIndicator.Fill = new SolidColorBrush(Colors.Red);
                 AddSystemMessage("🔴 Disconnected from server.");
                 SendButton.IsEnabled = false;
                 MessageBox.IsEnabled = false;
@@ -81,6 +113,8 @@ public partial class MainWindow : Window
         {
             Dispatcher.Invoke(() =>
             {
+                StatusText.Text = "Connected";
+                StatusIndicator.Fill = new SolidColorBrush(Colors.LimeGreen);
                 AddSystemMessage("🟢 Reconnected to server.");
                 SendButton.IsEnabled = true;
                 MessageBox.IsEnabled = true;
@@ -91,6 +125,8 @@ public partial class MainWindow : Window
         try
         {
             await _connection.StartAsync();
+            StatusText.Text = "Connected";
+            StatusIndicator.Fill = new SolidColorBrush(Colors.LimeGreen);
             AddSystemMessage("🟢 Connected to server.");
             SendButton.IsEnabled = true;
             MessageBox.IsEnabled = true;
