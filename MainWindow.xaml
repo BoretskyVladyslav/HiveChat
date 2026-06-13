@@ -1,0 +1,24 @@
+﻿<Window x:Class="HiveChat.Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HiveChat" Height="450" Width="400">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+            <TextBox x:Name="UsernameBox" Width="150" Margin="0,0,10,0"/>
+            <Button x:Name="ConnectButton" Content="Connect" Click="ConnectButton_Click"/>
+        </StackPanel>
+
+        <ListBox x:Name="MessagesList" Grid.Row="1"/>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,10,0,0">
+            <TextBox x:Name="MessageBox" Width="250" Margin="0,0,10,0"/>
+            <Button x:Name="SendButton" Content="Send" Click="SendButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
