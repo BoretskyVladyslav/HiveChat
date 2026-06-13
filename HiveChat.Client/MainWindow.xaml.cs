@@ -1,8 +1,20 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace HiveChat.Client;
+
+public class ChatMessage
+{
+    public string Username { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
+    public bool IsOwnMessage { get; set; }
+    public bool IsSystemMessage { get; set; }
+
+    public string DisplayTime => Timestamp.ToString("HH:mm");
+}
 
 public partial class MainWindow : Window
 {
@@ -17,7 +29,7 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrWhiteSpace(UsernameBox.Text))
         {
-            MessagesList.Items.Add("Please enter a username.");
+            AddSystemMessage("⚠ Please enter a username.");
             return;
         }
 
@@ -33,7 +45,22 @@ public partial class MainWindow : Window
         {
             Dispatcher.Invoke(() =>
             {
-                MessagesList.Items.Add($"[{timestamp:HH:mm:ss}] {username}: {message}");
+                bool isOwn = username == UsernameBox.Text;
+                
+                MessagesList.Items.Add(new ChatMessage 
+                { 
+                    Username = username, 
+                    Text = message, 
+                    Timestamp = timestamp, 
+                    IsOwnMessage = isOwn 
+                });
+                
+                ScrollToBottom();
+
+                if (!isOwn)
+                {
+                    System.Media.SystemSounds.Asterisk.Play();
+                }
             });
         });
 
@@ -41,7 +68,7 @@ public partial class MainWindow : Window
         {
             Dispatcher.Invoke(() =>
             {
-                MessagesList.Items.Add("Disconnected from server.");
+                AddSystemMessage("🔴 Disconnected from server.");
                 SendButton.IsEnabled = false;
                 MessageBox.IsEnabled = false;
                 ConnectButton.IsEnabled = true;
@@ -54,7 +81,7 @@ public partial class MainWindow : Window
         {
             Dispatcher.Invoke(() =>
             {
-                MessagesList.Items.Add("Reconnected to server.");
+                AddSystemMessage("🟢 Reconnected to server.");
                 SendButton.IsEnabled = true;
                 MessageBox.IsEnabled = true;
             });
@@ -64,14 +91,16 @@ public partial class MainWindow : Window
         try
         {
             await _connection.StartAsync();
-            MessagesList.Items.Add("Connected to server.");
+            AddSystemMessage("🟢 Connected to server.");
             SendButton.IsEnabled = true;
             MessageBox.IsEnabled = true;
             MessageBox.Focus();
+            
+            await _connection.InvokeAsync("SendMessage", UsernameBox.Text, "приєднався до чату 👋");
         }
         catch (Exception ex)
         {
-            MessagesList.Items.Add($"Connection error: {ex.Message}");
+            AddSystemMessage($"🔴 Connection error: {ex.Message}");
             ConnectButton.IsEnabled = true;
             UsernameBox.IsEnabled = true;
         }
@@ -79,9 +108,23 @@ public partial class MainWindow : Window
 
     private async void SendButton_Click(object sender, RoutedEventArgs e)
     {
+        await SendMessageAsync();
+    }
+
+    private void MessageBox_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && Keyboard.Modifiers != ModifierKeys.Shift)
+        {
+            e.Handled = true;
+            _ = SendMessageAsync();
+        }
+    }
+
+    private async Task SendMessageAsync()
+    {
         if (_connection is null || _connection.State != HubConnectionState.Connected)
         {
-            MessagesList.Items.Add("Not connected.");
+            AddSystemMessage("⚠ Not connected.");
             return;
         }
 
@@ -99,7 +142,24 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessagesList.Items.Add($"Send error: {ex.Message}");
+            AddSystemMessage($"🔴 Send error: {ex.Message}");
         }
+    }
+
+    private void AddSystemMessage(string text)
+    {
+        MessagesList.Items.Add(new ChatMessage 
+        { 
+            Text = text, 
+            IsSystemMessage = true,
+            Timestamp = DateTime.Now
+        });
+        ScrollToBottom();
+    }
+
+    private void ScrollToBottom()
+    {
+        if (MessagesList.Items.Count > 0)
+            MessagesList.ScrollIntoView(MessagesList.Items[MessagesList.Items.Count - 1]);
     }
 }
