@@ -33,12 +33,7 @@ public class ChatHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var history = await _context.Messages
-            .OrderByDescending(m => m.Timestamp)
-            .Take(30)
-            .ToListAsync();
-
-        history.Reverse();
+        var history = _context.Messages.OrderBy(m => m.Timestamp).Take(30).ToList();
 
         await Clients.Caller.SendAsync("ReceiveHistory", history);
         await base.OnConnectedAsync();

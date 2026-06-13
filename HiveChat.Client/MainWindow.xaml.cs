@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace HiveChat.Client;
 
-public class ServerMessage
+public class Message
 {
     public int Id { get; set; }
     public string Username { get; set; } = string.Empty;
@@ -51,9 +51,9 @@ public partial class MainWindow : Window
             .WithAutomaticReconnect()
             .Build();
 
-        _connection.On<List<ServerMessage>>("ReceiveHistory", (history) =>
+        _connection.On<List<Message>>("ReceiveHistory", (history) =>
         {
-            Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 MessagesList.Items.Clear();
                 foreach (var msg in history)
@@ -73,7 +73,7 @@ public partial class MainWindow : Window
 
         _connection.On<string, string, DateTime>("ReceiveMessage", (username, message, timestamp) =>
         {
-            Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 bool isOwn = username == UsernameBox.Text;
                 
@@ -96,7 +96,7 @@ public partial class MainWindow : Window
 
         _connection.Closed += error =>
         {
-            Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 StatusText.Text = "Disconnected";
                 StatusIndicator.Fill = new SolidColorBrush(Colors.Red);
@@ -111,7 +111,7 @@ public partial class MainWindow : Window
 
         _connection.Reconnected += connectionId =>
         {
-            Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 StatusText.Text = "Connected";
                 StatusIndicator.Fill = new SolidColorBrush(Colors.LimeGreen);
