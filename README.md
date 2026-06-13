@@ -10,7 +10,7 @@
 - **ASP.NET Core 8** — мінімальний веб-сервер
 - **SignalR** — двосторонній зв'язок у реальному часі через WebSocket
 - **Entity Framework Core** — ORM для роботи з базою даних
-- **SQLite** — легковісна вбудована база даних
+- **SQLite** — легковісна вбудована база даних 
 
 ### Frontend
 - **WPF (Windows Presentation Foundation)** — нативний десктоп-клієнт під Windows
